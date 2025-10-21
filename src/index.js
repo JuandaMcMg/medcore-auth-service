@@ -51,6 +51,8 @@ app.use((req, res) => {
   });
 });
 
+database();
+
 app.listen(port, () => {
   console.log(`🔐 Auth Service running on port ${port}`);
   database();

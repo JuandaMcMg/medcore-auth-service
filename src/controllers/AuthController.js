@@ -281,6 +281,30 @@ const resendVerificationCode = async (req, res) => {
 };
 
 const signin = async (req, res) => {
+
+  console.log('✅ Entró al controlador signin');  
+
+  try {
+    const { email, password } = req.body;
+    console.log("📧 Email recibido:", email);
+
+    const user = await prisma.users.findUnique({
+      where: { email: email.toLowerCase().trim() }
+    });
+
+    if (!user) {
+      console.log("❌ Usuario no encontrado");
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    console.log("✅ Usuario encontrado:", user.email);
+    // (aquí tu lógica para comparar contraseñas, generar token, etc.)
+
+  } catch (error) {
+    console.error("💥 Error en signin:", error);
+    return res.status(500).json({ message: "Error interno en el servidor", error: error.message });
+  }
+  
   try {
     let { email, password, verificationCode } = req.body;
     
@@ -418,11 +442,16 @@ const signin = async (req, res) => {
         verificationType: "2FA",
         step: "2FA"
       });
+
+      
     }
+    
   } catch (error) {
     console.error("Error en signin:", error);
     return res.status(500).json({ message: "Error en el servidor" });
   }
+
+  
 };
 
 const logout = async (req, res) => {
@@ -436,6 +465,8 @@ const logout = async (req, res) => {
     return res.status(500).json({ message: "Error en el servidor" });
   }
 };
+
+
 
 module.exports = { 
   signup, 
