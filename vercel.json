@@ -16,13 +16,13 @@
   "env": {
     "NODE_ENV": "production",
     "PORT": "3002",
-    "MONGODB_URI": "@mongodb-uri",
+    "DATABASE_URL": "@database-url",
     "JWT_SECRET": "@jwt-secret",
-    "EMAIL_USER": "@email-user",
-    "EMAIL_PASSWORD": "@email-password",
-    "EMAIL_HOST": "@email-host",
-    "EMAIL_PORT": "@email-port",
-    "EMAIL_FROM": "@email-from",
-    "FRONTEND_URL": "@frontend-url"
+    "SMTP_HOST": "@smtp-host",
+    "SMTP_PORT": "@smtp-port",
+    "SMTP_USER": "@smtp-user",
+    "SMTP_PASS": "@smtp-pass",
+    "SMTP_SECURE": "@smtp-secure",
+    "AUDIT_SERVICE_URL": "@audit-service-url"
   }
 }

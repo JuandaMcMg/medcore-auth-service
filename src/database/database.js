@@ -18,6 +18,11 @@ const connectDB = async () => {
     console.warn('DATABASE_URL no está definida. Omitiendo conexión a MongoDB.');
     return null;
   }
+  
+  // Registrar el entorno actual (sin mostrar la URL completa por seguridad)
+  console.log(`Entorno: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Conectando a MongoDB: ${dbUrl.split('@')[1]?.split('/')[0] || 'URL no disponible'}`);
+  
 
   if (connectPromise) {
     return connectPromise;
