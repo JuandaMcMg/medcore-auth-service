@@ -303,21 +303,31 @@ const signin = async (req, res) => {
       return res.status(401).json({ message: "Credenciales inválidas" });
     }
 
-    // Verificar si la cuenta está activa
-    if (user.status !== "ACTIVE") {
-      return res.status(403).json({ 
-        message: "Tu cuenta no está activada. Por favor, verifica tu email con el código que te enviamos.",
-        requiresVerification: true,
-        verificationType: "EMAIL"
+    // Validar si el usuario está deshabilitado por el administrador
+
+    if (user.status === "DISABLED") {
+      return res.status(403).json({
+        message: "Tu cuenta ha sido deshabilitada por el administrador. Comunícate con soporte para reactivarla.",
+      //  code: "ACCOUNT_DISABLED"
       });
     }
 
-    // Validar si está habilitado por el admin
-    if (user.status === "DISABLED") {
+    if (user.status === "PENDING") {
       return res.status(403).json({
-        message: "Tu cuenta está deshabilitada por el administrador. Contacta con soporte."
+        message: "Tu cuenta aún no está activa. Verifica tu correo electrónico para completar la activación.",
+        requiresVerification: true,
+        verificationType: "EMAIL",
+       // code: "ACCOUNT_PENDING"
       });
     }
+
+    if (user.status !== "ACTIVE") {
+      return res.status(403).json({
+        message: "Tu cuenta no está disponible actualmente. Contacta al administrador.",
+       // code: "ACCOUNT_UNKNOWN_STATUS"
+      });
+    }
+
 
     // Verificar contraseña
     const passwordMatch = await bcrypt.compare(password, user.password);
@@ -437,7 +447,24 @@ const logout = async (req, res) => {
   }
 };
 
+const sendVerificationForUserMgmt = async (req, res) => {
+  try {
+    const { email, fullname, verificationCode, expiresInHours = 24 } = req.body || {};
+    if (!email || !fullname || !verificationCode) {
+      return res.status(400).json({ message: 'email, fullname y verificationCode son requeridos' });
+    }
 
+    const result = await sendVerificationEmail(email, fullname, verificationCode, expiresInHours);
+    if (!result.success) {
+      return res.status(502).json({ message: 'Fallo al enviar correo', error: String(result.error) });
+    }
+
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error('[AUTH] send-verification error:', e);
+    return res.status(500).json({ message: 'Error interno enviando verificación' });
+  }
+};
 
 module.exports = { 
   signup, 
@@ -445,5 +472,6 @@ module.exports = {
   resendVerificationCode, 
   verifyEmail,
   logout,
+  sendVerificationForUserMgmt,
   prisma
 };

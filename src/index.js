@@ -5,12 +5,27 @@ const authRoutes = require("./routes/authRoutes");
 const cors = require("cors");
 const helmet = require("helmet");
 const { sanitizeInputs } = require("./middlewares/sanitizeMiddleware");
+const { transporter } = require('./config/emailConfig');
 
 require("dotenv").config();
+
+const crypto = require('crypto');
+const s = process.env.JWT_SECRET || '';
+console.log('[BOOT][auth] JWT_SECRET len=', s.length, 'sha256=', crypto.createHash('sha256').update(s).digest('hex'));
+
 
 const port = process.env.PORT || 3002;
 
 const app = express();
+
+(async () => {
+  try {
+    const ok = await transporter.verify();
+    console.log('[SMTP] verify =>', ok);
+  } catch (e) {
+    console.error('[SMTP] verify ERROR =>', e);
+  }
+})();
 
 // Permitir CORS para comunicación entre microservicios
 app.use(cors({
