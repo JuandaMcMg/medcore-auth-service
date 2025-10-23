@@ -4,7 +4,9 @@ const fs = require("fs");
 
 // Configuración de Nodemailer
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,           // 465 = SSL/TLS
+  secure: true,        // true para 465
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -149,6 +151,8 @@ const send2FAEmail = async (email, fullname, verificationCode) => {
     return { success: false, error };
   }
 };
+
+
 
 module.exports = {
   generateVerificationCode,

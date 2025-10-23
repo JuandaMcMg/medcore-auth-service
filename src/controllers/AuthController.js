@@ -466,7 +466,24 @@ const logout = async (req, res) => {
   }
 };
 
+const sendVerificationForUserMgmt = async (req, res) => {
+  try {
+    const { email, fullname, verificationCode, expiresInHours = 24 } = req.body || {};
+    if (!email || !fullname || !verificationCode) {
+      return res.status(400).json({ message: 'email, fullname y verificationCode son requeridos' });
+    }
 
+    const result = await sendVerificationEmail(email, fullname, verificationCode, expiresInHours);
+    if (!result.success) {
+      return res.status(502).json({ message: 'Fallo al enviar correo', error: String(result.error) });
+    }
+
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error('[AUTH] send-verification error:', e);
+    return res.status(500).json({ message: 'Error interno enviando verificación' });
+  }
+};
 
 module.exports = { 
   signup, 
@@ -474,5 +491,6 @@ module.exports = {
   resendVerificationCode, 
   verifyEmail,
   logout,
+  sendVerificationForUserMgmt,
   prisma
 };
