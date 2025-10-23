@@ -13,6 +13,12 @@ const crypto = require('crypto');
 const s = process.env.JWT_SECRET || '';
 console.log('[BOOT][auth] JWT_SECRET len=', s.length, 'sha256=', crypto.createHash('sha256').update(s).digest('hex'));
 
+if ((process.env.DEBUG_AUTH || 'false').toLowerCase() === 'true') {
+  const s = process.env.JWT_SECRET || '';
+  console.log('[AUTH][SECRET] bytes.len =', Buffer.from(s, 'utf8').length);
+  console.log('[AUTH][SECRET] bytes.tail=', Buffer.from(s, 'utf8').toString('hex').slice(-16));
+}
+
 
 const port = process.env.PORT || 3002;
 

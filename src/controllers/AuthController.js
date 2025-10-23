@@ -374,6 +374,13 @@ const signin = async (req, res) => {
       
       // Código válido, eliminar del almacén temporal
       delete verificationCodes[email];
+
+      if ((process.env.DEBUG_AUTH || 'false').toLowerCase() === 'true') {
+        const s = process.env.JWT_SECRET || '';
+        console.log('[AUTH][SECRET] bytes.len =', Buffer.from(s, 'utf8').length);
+        console.log('[AUTH][SECRET] bytes.tail=', Buffer.from(s, 'utf8').toString('hex').slice(-16));
+      }
+
       
       // Generar JWT con información del usuario
       const token = jwt.sign(
