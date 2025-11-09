@@ -281,29 +281,7 @@ const resendVerificationCode = async (req, res) => {
 };
 
 const signin = async (req, res) => {
-
   console.log('✅ Entró al controlador signin');  
-
-  try {
-    const { email, password } = req.body;
-    console.log("📧 Email recibido:", email);
-
-    const user = await prisma.users.findUnique({
-      where: { email: email.toLowerCase().trim() }
-    });
-
-    if (!user) {
-      console.log("❌ Usuario no encontrado");
-      return res.status(404).json({ message: "Usuario no encontrado" });
-    }
-
-    console.log("✅ Usuario encontrado:", user.email);
-    // (aquí tu lógica para comparar contraseñas, generar token, etc.)
-
-  } catch (error) {
-    console.error("💥 Error en signin:", error);
-    return res.status(500).json({ message: "Error interno en el servidor", error: error.message });
-  }
   
   try {
     let { email, password, verificationCode } = req.body;
@@ -354,6 +332,8 @@ const signin = async (req, res) => {
     // Verificar contraseña
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
+      // Registrar intento fallido de inicio de sesión
+      await logLoginFailed(email, req, `Contraseña incorrecta para: ${email}`);
       return res.status(401).json({ message: "Credenciales inválidas" });
     }
 
@@ -384,32 +364,31 @@ const signin = async (req, res) => {
       
       // Código válido, eliminar del almacén temporal
       delete verificationCodes[email];
+
+      if ((process.env.DEBUG_AUTH || 'false').toLowerCase() === 'true') {
+        const s = process.env.JWT_SECRET || '';
+        console.log('[AUTH][SECRET] bytes.len =', Buffer.from(s, 'utf8').length);
+        console.log('[AUTH][SECRET] bytes.tail=', Buffer.from(s, 'utf8').toString('hex').slice(-16));
+      }
+
       
       // Generar JWT con información del usuario
       const token = jwt.sign(
         { 
           userId: user.id,
           email: user.email,
-          fullname: user.fullname,
+          //fullname: user.fullname,
           role: user.role ,
-          deptIds,
-          specialtyIds
+          //deptIds,
+         // specialtyIds,
+          
         },
-        process.env.JWT_SECRET,
+        process.env.JWT_SECRET, 
         { expiresIn: "24h" }
       );
 
       // Registrar inicio de sesión
-      await logActivity({
-        action: "INICIO_SESION",
-        entityType: "User",
-        entityId: user.id,
-        userId: user.id,
-        userEmail: user.email,
-        userName: user.fullname,
-        details: `Inicio de sesión exitoso con rol: ${user.role}`,
-        req
-      });
+      await logLogin(user, req);
       
       return res.status(200).json({
         message: "Autenticación exitosa",
@@ -418,7 +397,11 @@ const signin = async (req, res) => {
           id: user.id,
           email: user.email,
           fullname: user.fullname,
-          role: user.role
+          role: user.role,
+           profileImage: user.profileImage
+      ? `http://localhost:3003${user.profileImage}`
+      : null
+          
         }
       });
     } else {

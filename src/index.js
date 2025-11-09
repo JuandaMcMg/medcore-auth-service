@@ -30,6 +30,8 @@ const app = express();
 // Permitir CORS para comunicación entre microservicios
 app.use(cors({
   origin: ["http://localhost:3000", "http://localhost:3001"], // Frontend y API Gateway
+  //methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  //allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));
 
